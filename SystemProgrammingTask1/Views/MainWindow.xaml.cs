@@ -24,7 +24,7 @@ namespace SystemProgrammingTask1
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel() { MainView = this };
+            this.DataContext = new MainViewModel() { MainView = this };
         }
     }
 }

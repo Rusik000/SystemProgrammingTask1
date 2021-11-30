@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using SystemProgrammingTask1.Command;
 
 namespace SystemProgrammingTask1.ViewModels
@@ -40,35 +41,60 @@ namespace SystemProgrammingTask1.ViewModels
         }
 
 
-
         public MainViewModel()
         {
 
+            var processes = Process.GetProcesses();
+            AllProcess = new ObservableCollection<string>();
+            foreach (var item in processes)
+            {
+                AllProcess.Add(item.ProcessName);
+            }
+
+
+
             AddBlackBoxCommand = new RelayCommand((sender) =>
             {
-                var process = Process.GetCurrentProcess();
-
-                if (process.ProcessName==MainView.BlackBoxTxtBx.Text)
+                if (MainView.BlackBoxTxtBx.Text != null)
                 {
-
-                    process.Kill();
+                    if (AllProcess != null)
+                    {
+                        foreach (var item in AllProcess)
+                        {
+                            if (item==MainView.BlackBoxTxtBx.Text)
+                            {
+                                AllProcess.Remove(item);
+                                ProcessBlackBoxNames.Add(item);
+                                MainView.BlackBoxListBx.ItemsSource = ProcessBlackBoxNames;
+                            }
+                        }
+                    }
                 }
-
-
             });
 
             CreateCommand = new RelayCommand(sender =>
             {
-                var processes = Process.GetProcesses();
-                foreach (var item in processes)
+                MainView.AllProcessListBx.ItemsSource = AllProcess;
+                if (MainView.CreateTxtBx.Text != null)
                 {
-                    AllProcess = new ObservableCollection<string>();
-                    AllProcess.Add(item.ProcessName);
+                    Process.Start($"{MainView.CreateTxtBx.Text}.exe");
                 }
+                else
+                {
+                    MessageBox.Show("You must fill textbox");
+                }
+
             });
 
 
-            EndCommand = new RelayCommand(sender => { });
+            EndCommand = new RelayCommand(sender =>
+            {
+                var process = Process.GetProcesses().Where(p => p.ProcessName == MainView.CreateTxtBx.Text);
+                foreach (var item in process)
+                {
+                    item.Kill();
+                }
+            });
 
 
         }

@@ -19,13 +19,12 @@
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Row="0" Grid.Column="0">
-                <ListBox  ItemsSource="{Binding ProcessBlackBoxNames}">
+                <ListBox Name="BlackBoxListBx" >
 
                 </ListBox>
             </Grid>
             <Grid Grid.Row="0" Grid.Column="1">
-                <ListBox ItemsSource="{Binding Path=AllProcess}">
-
+                <ListBox Name="AllProcessListBx" >
                 </ListBox>
             </Grid>
 
