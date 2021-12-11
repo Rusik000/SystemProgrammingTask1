@@ -23,18 +23,18 @@ namespace SystemProgrammingTask1.ViewModels
         public RelayCommand EndCommand { get; set; }
 
 
-        private ObservableCollection<string> _processBlackBoxNames;
+        private Process _process;
 
-        public ObservableCollection<string> ProcessBlackBoxNames
+        public Process Process
         {
-            get { return _processBlackBoxNames; }
-            set { _processBlackBoxNames = value; OnPropertyChanged(); }
+            get { return _process; }
+            set { _process = value; OnPropertyChanged(); }
         }
 
 
 
-        private ObservableCollection<string> _allProcess;
-        public ObservableCollection<string> AllProcess
+        private ObservableCollection<Process> _allProcess;
+        public ObservableCollection<Process> AllProcess
         {
             get { return _allProcess; }
             set { _allProcess = value; OnPropertyChanged(); }
@@ -44,44 +44,90 @@ namespace SystemProgrammingTask1.ViewModels
         public MainViewModel()
         {
 
-            var processes = Process.GetProcesses();
-            AllProcess = new ObservableCollection<string>();
-            foreach (var item in processes)
-            {
-                AllProcess.Add(item.ProcessName);
-            }
+
+            AllProcess = new ObservableCollection<Process>(Process.GetProcesses());
 
 
 
             AddBlackBoxCommand = new RelayCommand((sender) =>
             {
-                if (MainView.BlackBoxTxtBx.Text != null)
+                MainView.BlackBoxListBx.Items.Add(MainView.BlackBoxTxtBx.Text);
+                try
                 {
-                    if (AllProcess != null)
+                    foreach (var item in MainView.BlackBoxListBx.Items)
                     {
-                        foreach (var item in AllProcess)
+                        var processes = AllProcess.Where(p => p.ProcessName == item.ToString());
+
+                        if (processes != null)
                         {
-                            if (item==MainView.BlackBoxTxtBx.Text)
+                            foreach (var item2 in processes)
                             {
-                                AllProcess.Remove(item);
-                                ProcessBlackBoxNames.Add(item);
-                                MainView.BlackBoxListBx.ItemsSource = ProcessBlackBoxNames;
+                                Console.WriteLine($"{item2.Id}  {item2.ProcessName}");
+                                var process = AllProcess.FirstOrDefault(p => p.ProcessName == item.ToString());
+
+                                if (item2.ProcessName == process.ProcessName)
+                                {
+                                    if (!item2.WaitForExit(1000))
+                                    {
+                                        MessageBox.Show(item2.StartTime.ToLongTimeString());
+                                        for (int J = 0; J < 100; J++)
+                                        {
+                                            if (!item2.HasExited) item2.Kill();
+
+                                        }
+
+                                    }
+                                }
+
                             }
+
+                            AllProcess = new ObservableCollection<Process>(Process.GetProcesses());
+
                         }
+
+
                     }
+
+                }
+                catch (Exception)
+                {
+
+
                 }
             });
 
             CreateCommand = new RelayCommand(sender =>
             {
-                MainView.AllProcessListBx.ItemsSource = AllProcess;
-                if (MainView.CreateTxtBx.Text != null)
+                if (MainView.CreateTxtBx.Text != string.Empty)
                 {
-                    Process.Start($"{MainView.CreateTxtBx.Text}.exe");
+                    try
+                    {
+                        bool opening = true;
+                        foreach (var item in MainView.BlackBoxListBx.Items)
+                        {
+
+                            if (item.ToString() == MainView.CreateTxtBx.Text)
+                            {
+                                MessageBox.Show("You can not create this exe");
+                                opening = false;
+                            }
+
+                        }
+
+                        if (opening == true)
+                        {
+                            Process.Start($"{MainView.CreateTxtBx.Text}.exe");
+                        }
+                        
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("You must fill correct");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("You must fill textbox");
+                    MessageBox.Show("You must fill the text");
                 }
 
             });
